@@ -1,0 +1,28 @@
+name: ci
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+
+jobs:
+  ubuntu-minimal:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-24.04-arm
+          - ubuntu-24.04
+    steps:
+    - uses: actions/checkout@v6
+    - uses: eessi/github-action-eessi@v3
+      with:
+        eessi_stack_version: '2023.06'
+    - name: Test building with EESSI
+      run: |
+        module load EESSI-extend
+        unset EASYBUILD_DEBUG
+        eb --robot OpenLB-1.8.1-foss-2023b.eb
+        eb --logtostdout --software-commit=$GITHUB_SHA .github/ci.eb
+      shell: bash
