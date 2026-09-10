@@ -27,6 +27,8 @@ skipsteps = ['configure']
 if ARCH == 'aarch64':
     prebuildopts = "export PLATFORMS='CPU_SISD' &&"
 
+test_cmd = 'chmod +x ./tests/test.sh && ./tests/test.sh'
+
 install_cmd = 'mkdir -p %(installdir)s/bin && cp PermPorousWood %(installdir)s/bin/'
 
 sanity_check_paths = {
@@ -35,7 +37,7 @@ sanity_check_paths = {
 }
 
 sanity_check_commands = [
-    'PermPorousWood 2>&1 | grep -q "Usage: PermPorousWood"',
+    'mpirun -n 1 PermPorousWood 2>&1 | grep -q "Usage: PermPorousWood"',
 ]
 
 # Only builds 1 file using the OpenLB header library
