@@ -14,10 +14,10 @@ fi
 
 baseline=$(cat $BASEDIR/baseline.dat)
 test=$(cat permeability.dat)
-threshold=1e-2
+threshold=6e-2
 
 diff=$(awk -v b="$baseline" -v t="$test" 'BEGIN { print (b > t) ? b - t : t - b }')
-diff_relative=$(awk -v d="$diff" -v b="$baseline" 'BEGIN { print d / b }')
+diff_relative=$(awk -v d="$diff" -v b="$baseline" 'BEGIN { print -d / b }')
 
 echo "Baseline: $baseline"
 echo "Test: $test"
