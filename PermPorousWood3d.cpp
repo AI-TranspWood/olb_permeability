@@ -556,7 +556,7 @@ int main(int argc, char* argv[])
           << " <filename> <arrayname> <scaling-factor> <uPhys(m/s)> "
           << "<resolution> <inlet pressure> <tau> <wallPermeability(m^2)> "
           << "<kinematicViscosity(m^2/s)> <fluidDensity(kg/m^3)> <relative tolerance> <flowDirection> "
-          << "[uniformGuoZhao(0/1), default 0]\n";
+          << "[uniformGuoZhao(0/1), default 0]" << std::endl;
     return 1;
   }
   if (argc > 13) {
