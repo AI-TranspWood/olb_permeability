@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Run a calculation on image.vti and compare the output in permeability.dat with baseline.dat
-
 BASEDIR=$(dirname "$0")
 
 rm -fr permeability.dat
@@ -15,17 +14,16 @@ fi
 
 baseline=$(cat $BASEDIR/baseline.dat)
 test=$(cat permeability.dat)
-threshold=1e-5
-
-# diff=$(( baseline - test ))
-# (( diff < 0 )) && diff=$(( -diff ))
+threshold=1e-2
 
 diff=$(awk -v b="$baseline" -v t="$test" 'BEGIN { print (b > t) ? b - t : t - b }')
+diff_relative=$(awk -v d="$diff" -v b="$baseline" 'BEGIN { print d / b }')
+
 echo "Baseline: $baseline"
 echo "Test: $test"
 echo "Difference: $diff"
-
-if awk -v d="$diff" -v t="$threshold" 'BEGIN { exit (d <= t) ? 0 : 1 }'; then
+echo "Relative Difference: $diff_relative"
+if awk -v d="$diff_relative" -v t="$threshold" 'BEGIN { exit (d <= t) ? 0 : 1 }'; then
     echo "Test passed: permeability.dat is within the threshold of baseline.dat"
     exit 0
 else
