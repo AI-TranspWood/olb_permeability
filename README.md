@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`PermPorousWood3d` calculates the permeability of wood microstructures and other porous materials using the Lattice Boltzmann Method (LBM) in OpenLB 1.8.1.
+`PermPorousWood` calculates the permeability of wood microstructures and other porous materials using the Lattice Boltzmann Method (LBM) in OpenLB 1.8.1.
 
 The geometry is imported from a VTI (`VTK ImageData`) file generated from segmented image data. The fluid region is solved using standard BGK dynamics, while the wood material is represented as a porous medium using the Guo–Zhao porous-medium formulation with a directly specified Darcy permeability.
 
@@ -54,7 +54,7 @@ for:
 The porous drag is controlled through a prescribed Darcy permeability:
 
 ```text
-K = wallPermeability [m²]
+K = wallPermeability [m^2]
 ```
 
 rather than a porosity-based resistance model.
@@ -88,16 +88,26 @@ which uses:
 - C++17 compiler
 - MPI (optional)
 
-## Example Compilation
+## Manual Compilation
 
 ```bash
 mpicxx -std=c++17 -O3 \
-    -o PermPorousWood3d \
+    -o PermPorousWood \
     PermPorousWood3d.cpp \
     -lopenlb
 ```
 
-Alternatively, integrate the source into the OpenLB examples build system.
+## OpenLB examples system
+
+Set `OLB_ROOT` to the OpenLB root directory and run
+
+```bash
+make
+```
+
+This will re-use the configure file generated when building OpenLB so make sure to have all the required extra
+module/dependencies loaded/available.
+
 
 ---
 
@@ -106,7 +116,7 @@ Alternatively, integrate the source into the OpenLB examples build system.
 The program accepts the following arguments:
 
 ```text
-PermPorousWood3d
+PermPorousWood
     <vtiFile>
     <arrayName>
     <scalingFactor>
@@ -124,172 +134,32 @@ PermPorousWood3d
 
 ## Parameters
 
-### vtiFile
+| Parameter | Units | Description | Notes |
+|-----------|-------|--------------|---------|
+| `vtiFile` | | Input geometry file | |
+| `arrayName` | | Name of the scalar array defining fluid voxels inside the VTI file | |
+| `scalingFactor` | m | Physical voxel scaling factor | |
+| `uPhys` | m/s | Outlet velocity magnitude | Must be (>0) |
+| `resolution` | lattice cells | Lattice resolution used by OpenLB | |
+| `InletPressure` | Pa/m | Applied pressure gradient | |
+| `tau` | | LBM relaxation time | Recommended: 0.6 < tau < 1.2 |
+| `wallPermeability` | m^2 | Physical Darcy permeability assigned to the porous material | Typical wood values: 1e-18 ... 1e-14 m^2 |
+| `kinematicViscosity` | m^2/s | Fluid kinematic viscosity | Example: 1e-6 for water |
+| `fluidDensity` | kg/m^3 | Fluid density | Example: 1000 for water |
+| `criterium` | | Convergence tolerance used during permeability monitoring | |
+| `flowDirection` | | Direction of imposed flow | 0 = X, 1 = Y, 2 = Z |
+| `uniformGuoZhao` | | Optional: 0 = Production mode, 1 = Diagnostic mode | Default: 0 |
 
-Input geometry file.
 
-Example:
-
-```text
-wood_structure.vti
-```
-
-### arrayName
-
-Name of the scalar array defining fluid voxels inside the VTI file.
-
-Example:
-
-```text
-ImageFile
-```
-
-### scalingFactor
-
-Physical voxel scaling factor.
-
-Units:
-
-```text
-m
-```
-
-### uPhys
-
-Outlet velocity magnitude.
-
-Units:
-
-```text
-m/s
-```
-
-Must be:
-
-```text
-uPhys > 0
-```
-
-### resolution
-
-Lattice resolution used by OpenLB.
-
-Units:
-
-```text
-lattice cells
-```
-
-### InletPressure
-
-Applied pressure gradient.
-
-Units:
-
-```text
-Pa/m
-```
-
-### tau
-
-LBM relaxation time.
-
-Recommended:
-
-```text
-0.6 < tau < 1.2
-```
-
-### wallPermeability
-
-Physical Darcy permeability assigned to the porous material.
-
-Units:
-
-```text
-m²
-```
-
-Typical wood values:
-
-```text
-1e-18 ... 1e-14 m²
-```
-
-### kinematicViscosity
-
-Fluid kinematic viscosity.
-
-Units:
-
-```text
-m²/s
-```
-
-Example:
-
-```text
-1e-6
-```
-
-for water.
-
-### fluidDensity
-
-Fluid density.
-
-Units:
-
-```text
-kg/m³
-```
-
-Example:
-
-```text
-1000
-```
-
-for water.
-
-### criterium
-
-Convergence tolerance used during permeability monitoring.
-
-### flowDirection
-
-Direction of imposed flow:
-
-```text
-0 = X
-1 = Y
-2 = Z
-```
-
-### uniformGuoZhao (optional)
-
-```text
-0 = Production mode
-1 = Diagnostic mode
-```
-
-Default:
-
-```text
-0
-```
-
----
-
-# Example Run
+## Example Run
 
 ```bash
-mpirun -np 16 ./PermPorousWood3d \
-    wood.vti \
+mpirun -np 4 ./PermPorousWood \
+    tests/image.vti \
     ImageFile \
     1e-5 \
     1e-3 \
-    200 \
+    40 \
     1e5 \
     0.8 \
     1e-16 \
@@ -302,11 +172,11 @@ mpirun -np 16 ./PermPorousWood3d \
 
 This example:
 
-- loads geometry from `wood.vti`
+- loads geometry from `tests/image.vti`
 - scales voxels by `1e-5 m`
 - simulates water
 - applies flow in Z direction
-- uses a wood permeability of `1×10⁻¹⁶ m²`
+- uses a wood permeability of `1e-16 m^2`
 - uses standard split dynamics (BGK + Guo–Zhao)
 
 ---
@@ -326,51 +196,12 @@ This example:
 
 # Boundary Conditions
 
-## Inlet
+| Type | Material | Boundary Type | Description |
+|------|----------|---------------|-------------|
+| Inlet | 3 | LocalPressure | Inlet pressure is ramped during startup to avoid numerical shocks |
+| Outlet | 4 | LocalVelocity | Outlet velocity magnitude is defined by `uPhys` |
+| Lateral | | Periodic | Directions orthogonal to the flow are periodic  eg flow in X → periodic Y and Z |
 
-Material:
-
-```text
-3
-```
-
-Boundary type:
-
-```text
-LocalPressure
-```
-
-The inlet pressure is gradually ramped during startup to avoid numerical shocks.
-
-## Outlet
-
-Material:
-
-```text
-4
-```
-
-Boundary type:
-
-```text
-LocalVelocity
-```
-
-The outlet velocity magnitude is defined by:
-
-```text
-uPhys
-```
-
-## Lateral Boundaries
-
-By default the directions orthogonal to the flow are periodic.
-
-For example:
-
-- flow in X → periodic Y and Z
-- flow in Y → periodic X and Z
-- flow in Z → periodic X and Y
 
 ---
 
@@ -467,9 +298,9 @@ Select permeability values representative of the porous material being studied.
 Examples:
 
 ```text
-Dense hardwoods     ~ 1e-18 to 1e-17 m²
-Softwoods           ~ 1e-17 to 1e-15 m²
-Highly permeable    > 1e-15 m²
+Dense hardwoods     ~ 1e-18 to 1e-17 m^2
+Softwoods           ~ 1e-17 to 1e-15 m^2
+Highly permeable    > 1e-15 m^2
 ```
 
 ## Velocity
@@ -496,6 +327,6 @@ Higher resolution generally improves permeability accuracy at increased computat
 
 # References
 
-- OpenLB User Guide
-- Guo, Z. and Zhao, T.S., "Lattice Boltzmann model for incompressible flows through porous media"
-- AI-TranspWood project
+- [OpenLB User Guide](https://www.openlb.net/user-guide/)
+- [Guo, Z. and Zhao, T.S., "Lattice Boltzmann model for incompressible flows through porous media"](https://journals.aps.org/pre/abstract/10.1103/PhysRevE.66.036304)
+- [AI-TranspWood](https://www.ai-transpwood-project.eu/) project
