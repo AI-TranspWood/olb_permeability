@@ -24,9 +24,6 @@ dependencies = [
 
 skipsteps = ['configure']
 
-if ARCH == 'aarch64':
-    prebuildopts = "export PLATFORMS='CPU_SISD' &&"
-
 test_cmd = 'chmod +x ./tests/test.sh && ./tests/test.sh'
 
 install_cmd = 'mkdir -p %(installdir)s/bin && cp PermPorousWood %(installdir)s/bin/'
