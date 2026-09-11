@@ -27,6 +27,5 @@ jobs:
       run: |
         module load EESSI-extend
         unset EASYBUILD_DEBUG
-        eb --robot OpenLB-1.8.1-foss-2023b.eb --from-commit e0be4b23a0030e2541b4033f75617a153335e9d5
         eb --logtostdout --software-commit=$GITHUB_SHA .github/ci.eb
       shell: bash
