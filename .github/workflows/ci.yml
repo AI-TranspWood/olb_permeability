@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ubuntu-minimal:
+  build-and-test-opt:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -20,6 +20,23 @@ jobs:
           - ubuntu-24.04
     steps:
     - uses: actions/checkout@v6
+    - uses: eessi/github-action-eessi@v3
+      with:
+        eessi_stack_version: '2023.06'
+    - name: Test building with EESSI
+      run: |
+        module load EESSI-extend
+        unset EASYBUILD_DEBUG
+        eb --logtostdout --software-commit=$GITHUB_SHA .github/ci.eb
+      shell: bash
+
+  build-and-test-generic:
+    runs-on: ubuntu-24.04-arm
+    steps:
+    - uses: actions/checkout@v6
+    - name: Setup GENERIC build
+      run: |
+        echo "EESSI_SOFTWARE_SUBDIR_OVERRIDE='aarch64/generic'" >> $GITHUB_ENV
     - uses: eessi/github-action-eessi@v3
       with:
         eessi_stack_version: '2023.06'
