@@ -479,7 +479,7 @@ void getResults(SuperLattice<T,DESCRIPTOR>& sLattice,
         pressure, superGeometry, originOut, extentTK, materials,
         BlockDataReductionMode::Discrete);
 
-    T pInArr[2], pOutArr[2];
+    T pInArr[5] {}, pOutArr[5] {};
     pIn(pInArr, dummy);
     pOut(pOutArr, dummy);
 

@@ -7,6 +7,11 @@ rm -fr permeability.dat
 
 mpirun -np 1 PermPorousWood tests/image.vti ImageFile 1e-5 1e-3 40 1e5 0.8 1e-16 1e-6 1000 1e-5 2 0
 
+if [ $? -ne 0 ]; then
+    echo "Error: PermPorousWood calculation failed."
+    exit 1
+fi
+
 if [ ! -f permeability.dat ]; then
     echo "Error: permeability.dat not found. The calculation may have failed."
     exit 1
